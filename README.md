@@ -8,6 +8,9 @@ fn main () {
     let mut e = EventEmitter::new();
 
     e.on("click", |data: &mut dyn Any| {
+        //
+        // Listen for any data structure and re-cast it.
+        //
         let d = &mut data.downcast_mut::<Args>().unwrap();
         assert_eq!(d.x, 1);
     });
@@ -17,6 +20,9 @@ fn main () {
         pub y: usize,
     }
 
+    //
+    // Emit any data structure
+    //
     e.emit("click", &mut Args { x: 1, y: 2 });
 }
 ```
