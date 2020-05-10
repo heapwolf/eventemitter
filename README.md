@@ -4,8 +4,10 @@ An event emtter for Rust.
 # USAGE
 
 ```rust
+mod events;
+
 fn main () {
-    let mut e = EventEmitter::new();
+    let mut e = events::EventEmitter::new();
 
     e.on("click", |data: &mut dyn Any| {
         //
