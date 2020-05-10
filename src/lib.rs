@@ -53,11 +53,6 @@ impl<'a> EventEmitter<'a> {
 mod tests {
     use super::*;
 
-    struct Args {
-        pub x: usize,
-        pub y: usize,
-    }
-
     #[test]
     fn emit () {
         let mut e = EventEmitter::new();
@@ -72,6 +67,11 @@ mod tests {
             d.y = 20;
         });
 
+        struct Args {
+            pub x: usize,
+            pub y: usize,
+        }
+
         let args = &mut Args { x: 1, y: 2 };
 
         assert_eq!(args.x, 1);
@@ -82,5 +82,27 @@ mod tests {
         assert_eq!(args.x, 10);
         assert_eq!(args.y, 20);
         assert_eq!(e.listeners("click").unwrap().len(), 2);
+    }
+
+    #[test]
+    fn read () {
+        let mut e = EventEmitter::new();
+
+        e.on("click", |data: &mut dyn Any| {
+            let d = &mut data.downcast_mut::<Args>().unwrap();
+            assert_eq!(d.x, 1);
+        });
+
+        e.on("click", |data: &mut dyn Any| {
+            let d = &mut data.downcast_mut::<Args>().unwrap();
+            assert_eq!(d.y, 2);
+        });
+
+        struct Args {
+            pub x: usize,
+            pub y: usize,
+        }
+
+        e.emit("click", &mut Args { x: 1, y: 2 });
     }
 }

@@ -4,23 +4,23 @@ An event emtter for Rust.
 # USAGE
 
 ```rust
-struct Args {
-    pub x: usize,
-    pub y: usize,
-}
-
 fn main () {
     let mut e = EventEmitter::new();
 
     e.on("click", |data: &mut dyn Any| {
         let d = &mut data.downcast_mut::<Args>().unwrap();
-        d.x = 10;
+        assert_eq!(d.x, 1);
     });
 
     e.on("click", |data: &mut dyn Any| {
         let d = &mut data.downcast_mut::<Args>().unwrap();
-        d.y = 20;
+        assert_eq!(d.y, 2);
     });
+
+    struct Args {
+        pub x: usize,
+        pub y: usize,
+    }
 
     e.emit("click", &mut Args { x: 1, y: 2 });
 }
