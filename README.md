@@ -3,7 +3,7 @@ An event emtter for Rust.
 
 # USAGE
 
-```rs
+```rust
 struct Args {
     pub x: usize,
     pub y: usize,
