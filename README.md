@@ -10,6 +10,7 @@ fn main () {
     let mut e = events::EventEmitter::new();
 
     e.on("click", |data: &mut dyn Any| {
+
         //
         // Listen for any data structure and re-cast it.
         //

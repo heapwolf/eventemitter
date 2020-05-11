@@ -30,7 +30,17 @@ impl<'a> EventEmitter<'a> {
         list.push(EventEmitter::<'a>::create_callback(cb));
     }
 
+    pub fn off(&mut self, name: &'a str) {
+        if self.events.contains_key(name) {
+            self.events.remove(name);
+        }
+    }
+
     pub fn emit(&mut self, name: &'a str, data: &mut dyn Any) {
+        if !self.events.contains_key(name) {
+            return
+        }
+
         let list = &mut self.events.get_mut(name).unwrap();
 
         for cb in list.iter_mut() {
@@ -54,7 +64,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn emit () {
+    fn emit_data () {
         let mut e = EventEmitter::new();
 
         e.on("click", |data: &mut dyn Any| {
@@ -85,7 +95,7 @@ mod tests {
     }
 
     #[test]
-    fn read () {
+    fn emit_inline () {
         let mut e = EventEmitter::new();
 
         e.on("click", |data: &mut dyn Any| {
@@ -104,5 +114,29 @@ mod tests {
         }
 
         e.emit("click", &mut Args { x: 1, y: 2 });
+    }
+
+    #[test]
+    fn off () {
+        let mut e = EventEmitter::new();
+
+        e.on("click", |data: &mut dyn Any| {
+            let d = &mut data.downcast_mut::<Args>().unwrap();
+            d.x = d.x + 1;
+        });
+
+        struct Args {
+            pub x: usize,
+        }
+        
+        let args = &mut Args { x: 0 };
+
+        e.emit("click", args);
+        assert_eq!(args.x, 1);
+        e.emit("click", args);
+        assert_eq!(args.x, 2);
+        e.off("click");
+        e.emit("click", args);
+        assert_eq!(args.x, 2);
     }
 }
