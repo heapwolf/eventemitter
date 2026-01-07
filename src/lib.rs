@@ -9,14 +9,19 @@ pub struct EventEmitter {
 
 impl EventEmitter {
     pub fn new() -> Self {
-        Self { events: HashMap::new() }
+        Self {
+            events: HashMap::new(),
+        }
     }
 
     pub fn on<F>(&mut self, name: impl Into<String>, cb: F)
     where
         F: FnMut(&mut dyn Any) + 'static,
     {
-        self.events.entry(name.into()).or_default().push(Box::new(cb));
+        self.events
+            .entry(name.into())
+            .or_default()
+            .push(Box::new(cb));
     }
 
     pub fn off(&mut self, name: &str) {
@@ -41,7 +46,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn emit_data () {
+    fn emit_data() {
         let mut e = EventEmitter::new();
 
         e.on("click", |data: &mut dyn Any| {
@@ -72,7 +77,7 @@ mod tests {
     }
 
     #[test]
-    fn emit_inline () {
+    fn emit_inline() {
         let mut e = EventEmitter::new();
 
         e.on("click", |data: &mut dyn Any| {
@@ -94,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn off () {
+    fn off() {
         let mut e = EventEmitter::new();
 
         e.on("click", |data: &mut dyn Any| {
@@ -105,7 +110,7 @@ mod tests {
         struct Args {
             pub x: usize,
         }
-        
+
         let args = &mut Args { x: 0 };
 
         e.emit("click", args);
