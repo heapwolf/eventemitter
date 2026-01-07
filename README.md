@@ -1,5 +1,5 @@
 # SYNOPSIS
-An event emtter for Rust.
+A lightweight, single-threaded, "dynamic" event emitter for Rust.
 
 # USAGE
 

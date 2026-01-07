@@ -1,61 +1,38 @@
 use std::any::Any;
 use std::collections::HashMap;
 
-type Callback<'a> = Box<(dyn FnMut(&mut dyn Any) + 'static)>;
+type Callback = Box<dyn FnMut(&mut dyn Any) + 'static>;
 
-pub struct EventEmitter<'a> {
-    pub events: HashMap<&'a str, Vec<Callback<'a>>>,
+pub struct EventEmitter {
+    events: HashMap<String, Vec<Callback>>,
 }
 
-impl<'a> EventEmitter<'a> {
+impl EventEmitter {
     pub fn new() -> Self {
-        EventEmitter {
-            events: HashMap::new(),
-        }
+        Self { events: HashMap::new() }
     }
 
-    pub fn create_callback<'x, F>(f: F) -> Callback<'x>
+    pub fn on<F>(&mut self, name: impl Into<String>, cb: F)
     where
         F: FnMut(&mut dyn Any) + 'static,
     {
-        Box::new(f) as Callback
+        self.events.entry(name.into()).or_default().push(Box::new(cb));
     }
 
-    pub fn on(&mut self, name: &'a str, cb: impl Fn(&mut dyn Any) + 'static) {
-        if !self.events.contains_key(name) {
-            self.events.insert(name, Vec::new());
-        }
-
-        let list = &mut self.events.get_mut(name).unwrap();
-        list.push(EventEmitter::<'a>::create_callback(cb));
+    pub fn off(&mut self, name: &str) {
+        self.events.remove(name);
     }
 
-    pub fn off(&mut self, name: &'a str) {
-        if self.events.contains_key(name) {
-            self.events.remove(name);
+    pub fn emit(&mut self, name: &str, data: &mut dyn Any) {
+        if let Some(list) = self.events.get_mut(name) {
+            for cb in list.iter_mut() {
+                cb(data);
+            }
         }
     }
 
-    pub fn emit(&mut self, name: &'a str, data: &mut dyn Any) {
-        if !self.events.contains_key(name) {
-            return
-        }
-
-        let list = &mut self.events.get_mut(name).unwrap();
-
-        for cb in list.iter_mut() {
-            cb(data);
-        }
-    }
-
-    pub fn listeners(&mut self, name: &'a str) -> Option<&Vec<Callback<'a>>> {
-        let listeners = self.events.get(name);
-
-        if listeners.is_some() {
-            return listeners;
-        }
-
-        None
+    pub fn listener_count(&self, name: &str) -> usize {
+        self.events.get(name).map(|v| v.len()).unwrap_or(0)
     }
 }
 
@@ -91,7 +68,7 @@ mod tests {
 
         assert_eq!(args.x, 10);
         assert_eq!(args.y, 20);
-        assert_eq!(e.listeners("click").unwrap().len(), 2);
+        assert_eq!(e.listener_count("click"), 2);
     }
 
     #[test]
